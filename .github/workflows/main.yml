@@ -1,55 +1,29 @@
-name: Build project
+name: Build
 
-on: 
+on:
   push:
-    tags:
-      - 'v*-auto'
+    branches: [ main ]
   pull_request:
-    tags:
-      - 'v*-auto'
+    branches: [ main ]
 
+  workflow_dispatch:
 
 jobs:
-  buildForAllSupportedPlatforms:
-    name: Building ${{ matrix.targetPlatform }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - StandaloneWindows64
-          #- Android
+  build:
+    runs-on: [self-hosted]
+    env:
+        PROJECT_PATH: ".\\"
+        BUILD_METHOD_WIN64: "BuildProject.BuildWindows64"
+        BUILD_METHOD_WIN32: "BuildProject.BuildWindows32"
+        gameName: "Plataformote"
+        projectVersion: "Test"
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          lfs: true
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.targetPlatform }}
-          restore-keys: Library-
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildsPath: ./build
+      - name: Build For Windows 64 bits
+        run: Start-Process -Wait 'C:\Program Files\Unity\Editor\Unity.exe' -ArgumentList "-nographics -batchmode -projectPath $env:PROJECT_PATH -executeMethod $env:BUILD_METHOD_WIN64 -quit"
+      - name: Build For Windows 32 bits
+        run: Start-Process -Wait 'C:\Program Files\Unity\Editor\Unity.exe' -ArgumentList "-nographics -batchmode -projectPath $env:PROJECT_PATH -executeMethod $env:BUILD_METHOD_WIN32 -quit"
       - uses: actions/upload-artifact@v2
-        id: uarti
         with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: build/${{ matrix.targetPlatform }}
-      - name: Release
-        uses: fnkr/github-action-ghr@v1
-        env:
-          GHR_COMPRESS: zip
-          GHR_PATH: build/
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update release
-        id: update_release
-        uses: tubone24/update_release@v1.0
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          prerelease: true
+          name: executable
+          path: build/*
