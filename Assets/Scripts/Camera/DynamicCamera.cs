@@ -207,3 +207,4 @@ namespace CameraManagement
         }
     }
 }
+// SEPTIMO INTENTO DE UNIT TEST CON ACTIONS
