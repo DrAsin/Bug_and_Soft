@@ -234,5 +234,9 @@ namespace Input
         {
             playerControls.Enable();
         }
+        void test ()
+        {
+            //OCTAVO INTENTO DE RUNNER
+        }    
     }
 }
